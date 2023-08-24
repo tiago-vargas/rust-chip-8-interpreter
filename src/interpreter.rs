@@ -1,17 +1,22 @@
 use std::path::Path;
 
-pub(crate) struct Machine {
-    pub(crate) rom_bytes: Vec<u8>,
+pub struct Machine {
+    pub rom_bytes: Vec<u8>,
+    pub video_buffer: [[u8; 64]; 32]
 }
 
 impl Machine {
-    pub(crate) fn new() -> Self {
-        Machine { rom_bytes: vec![] }
+    pub fn new() -> Self {
+        Machine { rom_bytes: vec![], video_buffer: [[0; 64]; 32] }
     }
 
-    pub(crate) fn load_rom<P: AsRef<Path>>(&mut self, rom_path: P) {
+    pub fn load_rom<P: AsRef<Path>>(&mut self, rom_path: P) {
         let rom = std::fs::read(rom_path);
         self.rom_bytes = rom.unwrap();
+    }
+
+    pub fn run(&self) {
+        todo!()
     }
 }
 
