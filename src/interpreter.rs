@@ -4,6 +4,7 @@ pub struct Machine {
     pub rom_bytes: Vec<u8>,
     pub video_buffer: [[u8; 64]; 32],
     program_counter: u16,
+    variable_register: [u8; 16],
 }
 
 impl Machine {
@@ -12,6 +13,7 @@ impl Machine {
             rom_bytes: vec![],
             video_buffer: [[0; 64]; 32],
             program_counter: 0,
+            variable_register: [0; 16],
         }
     }
 
@@ -28,6 +30,12 @@ impl Machine {
         match opcode {
             0x00E0 => self.video_buffer = [[0; 64]; 32],
             0x1000..=0x1FFF => self.program_counter = opcode - 0x1000,
+            0x6000..=0x6FFF => {
+                let register = opcode & 0x0F00;
+                let index = register >> 8;
+                let value = opcode & 0x00FF;
+                self.variable_register[index as usize] = value as u8;
+            },
             _ => todo!()
         }
     }
@@ -76,5 +84,14 @@ mod tests {
         machine.decode(0x1ACEu16); // NNN = 0xACE
 
         assert_eq!(machine.program_counter, 0x0ACE);
+    }
+
+    #[test]
+    fn decodes_6xnn_as_set_vx() {
+        let mut machine = Machine::new();
+
+        machine.decode(0x6ACEu16); // X = 0xA; NN = 0xCE
+
+        assert_eq!(machine.variable_register[0xA], 0xCE);
     }
 }
