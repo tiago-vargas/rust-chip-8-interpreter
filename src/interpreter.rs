@@ -19,9 +19,9 @@ impl Machine {
         todo!()
     }
 
-    // fn decode(opcode: u16) {
-
-    // }
+    fn decode(&mut self, opcode: u16) {
+        self.video_buffer = [[0; 64]; 32];
+    }
 }
 
 #[cfg(test)]
@@ -46,5 +46,17 @@ mod tests {
             0, 224, 0, 224,
         ];
         assert_eq!(machine.rom_bytes, expected_bytes);
+    }
+
+    #[test]
+    fn decodes_00e0_as_clear_screen() {
+        let mut machine = Machine::new();
+        let buffer_of_ones = [[1; 64]; 32];
+        machine.video_buffer = buffer_of_ones;
+
+        machine.decode(0x00E0u16);
+
+        let buffer_of_zeros = [[0; 64]; 32];
+        assert_eq!(machine.video_buffer, buffer_of_zeros);
     }
 }
