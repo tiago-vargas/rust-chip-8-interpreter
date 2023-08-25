@@ -5,6 +5,7 @@ pub struct Machine {
     pub video_buffer: [[u8; 64]; 32],
     program_counter: u16,
     variable_register: [u8; 16],
+    index_register: u16,
 }
 
 impl Machine {
@@ -14,6 +15,7 @@ impl Machine {
             video_buffer: [[0; 64]; 32],
             program_counter: 0,
             variable_register: [0; 16],
+            index_register: 0,
         }
     }
 
@@ -41,6 +43,10 @@ impl Machine {
                 let index = register >> 8;
                 let value = opcode & 0x00FF;
                 self.variable_register[index as usize] = self.variable_register[index as usize].wrapping_add(value as u8);
+            },
+            0xA000..=0xAFFF => {
+                let value = opcode & 0x0FFF;
+                self.index_register = value;
             },
             _ => todo!()
         }
@@ -121,5 +127,15 @@ mod tests {
         machine.decode(0x7ACEu16);  // X = 0xA; NN = 0xCE
 
         assert_eq!(machine.variable_register[0xA], initial_value.wrapping_add(0xCE));
+    }
+
+    #[test]
+    fn decodes_annn_as_set_index_register() {
+        let mut machine = Machine::new();
+        machine.index_register = 0xF1;
+
+        machine.decode(0xAF23u16);  // NNN = 0xF23
+
+        assert_eq!(machine.index_register, 0xF23);
     }
 }
