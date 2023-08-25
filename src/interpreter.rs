@@ -2,12 +2,17 @@ use std::path::Path;
 
 pub struct Machine {
     pub rom_bytes: Vec<u8>,
-    pub video_buffer: [[u8; 64]; 32]
+    pub video_buffer: [[u8; 64]; 32],
+    program_counter: u16,
 }
 
 impl Machine {
     pub fn new() -> Self {
-        Machine { rom_bytes: vec![], video_buffer: [[0; 64]; 32] }
+        Machine {
+            rom_bytes: vec![],
+            video_buffer: [[0; 64]; 32],
+            program_counter: 0,
+        }
     }
 
     pub fn load_rom<P: AsRef<Path>>(&mut self, rom_path: P) {
@@ -20,7 +25,11 @@ impl Machine {
     }
 
     fn decode(&mut self, opcode: u16) {
-        self.video_buffer = [[0; 64]; 32];
+        match opcode {
+            0x00E0 => self.video_buffer = [[0; 64]; 32],
+            0x1000..=0x1FFF => self.program_counter = opcode - 0x1000,
+            _ => todo!()
+        }
     }
 }
 
@@ -58,5 +67,14 @@ mod tests {
 
         let buffer_of_zeros = [[0; 64]; 32];
         assert_eq!(machine.video_buffer, buffer_of_zeros);
+    }
+
+    #[test]
+    fn decodes_1nnn_as_jump() {
+        let mut machine = Machine::new();
+
+        machine.decode(0x1ACEu16); // NNN = 0xACE
+
+        assert_eq!(machine.program_counter, 0x0ACE);
     }
 }
