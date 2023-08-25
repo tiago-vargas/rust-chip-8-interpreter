@@ -96,7 +96,7 @@ mod tests {
     fn decodes_6xnn_as_set_vx() {
         let mut machine = Machine::new();
 
-        machine.decode(0x6ACEu16); // X = 0xA; NN = 0xCE
+        machine.decode(0x6ACEu16);  // X = 0xA; NN = 0xCE
 
         assert_eq!(machine.variable_register[0xA], 0xCE);
     }
@@ -107,7 +107,7 @@ mod tests {
         machine.variable_register[0xA] = 0x31;
         let initial_value = machine.variable_register[0xA];
 
-        machine.decode(0x7ACEu16); // X = 0xA; NN = 0xCE
+        machine.decode(0x7ACEu16);  // X = 0xA; NN = 0xCE
 
         assert_eq!(machine.variable_register[0xA], initial_value + 0xCE);
     }
