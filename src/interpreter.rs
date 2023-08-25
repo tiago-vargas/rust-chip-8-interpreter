@@ -36,6 +36,12 @@ impl Machine {
                 let value = opcode & 0x00FF;
                 self.variable_register[index as usize] = value as u8;
             },
+            0x7000..=0x7FFF => {
+                let register = opcode & 0x0F00;
+                let index = register >> 8;
+                let value = opcode & 0x00FF;
+                self.variable_register[index as usize] += value as u8;
+            },
             _ => todo!()
         }
     }
@@ -93,5 +99,16 @@ mod tests {
         machine.decode(0x6ACEu16); // X = 0xA; NN = 0xCE
 
         assert_eq!(machine.variable_register[0xA], 0xCE);
+    }
+
+    #[test]
+    fn decodes_7xnn_as_add_value_to_vx_no_overflow() {
+        let mut machine = Machine::new();
+        machine.variable_register[0xA] = 0x31;
+        let initial_value = machine.variable_register[0xA];
+
+        machine.decode(0x7ACEu16); // X = 0xA; NN = 0xCE
+
+        assert_eq!(machine.variable_register[0xA], initial_value + 0xCE);
     }
 }
