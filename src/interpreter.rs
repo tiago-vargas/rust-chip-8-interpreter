@@ -18,6 +18,10 @@ impl Machine {
     pub fn run(&self) {
         todo!()
     }
+
+    // fn decode(opcode: u16) {
+
+    // }
 }
 
 #[cfg(test)]
@@ -27,7 +31,7 @@ mod tests {
     use std::path::Path;
 
     #[test]
-    pub(crate) fn loads_ibm_rom() {
+    fn loads_ibm_rom() {
         let mut machine = Machine::new();
 
         machine.load_rom(Path::new("./assets/IBM Logo.ch8"));
