@@ -87,31 +87,27 @@ impl Machine {
     fn draw(&mut self, x: u8, y: u8, height: u8, address: u16) {
         let line = y as usize;
         let column = x as usize;
-        let image = self.memory[address as usize];
-        let bytes = [
-            image & 0b1000_0000,
-            image & 0b0100_0000,
-            image & 0b0010_0000,
-            image & 0b0001_0000,
-            image & 0b0000_1000,
-            image & 0b0000_0100,
-            image & 0b0000_0010,
-            image & 0b0000_0001,
-        ];
-        // let mut b = [0u8; 8];
-        for i in 0..8 {
-            if bytes[i] == 0 {
-                // b[i] = 0;
-                self.video_buffer[line][column + i] = 0;
-            } else {
-                // b[i] = 1;
-                self.video_buffer[line][column + i] = 1;
+        for h in 0..height as usize {
+            let image = self.memory[(address as usize) + h];
+            let bytes = [
+                image & 0b1000_0000,
+                image & 0b0100_0000,
+                image & 0b0010_0000,
+                image & 0b0001_0000,
+                image & 0b0000_1000,
+                image & 0b0000_0100,
+                image & 0b0000_0010,
+                image & 0b0000_0001,
+            ];
+
+            for i in 0..8 {
+                if bytes[i] == 0 {
+                    self.video_buffer[line + h][column + i] = 0;
+                } else {
+                    self.video_buffer[line + h][column + i] = 1;
+                }
             }
         }
-
-        // for byte in b {
-
-        // }
     }
 }
 
@@ -216,5 +212,71 @@ mod tests {
         let mut expected_buffer = [[0; 64]; 32];
         expected_buffer[1][1] = 1;
         assert_eq!(machine.video_buffer, expected_buffer, "actual: {:#?}\nexpected: {expected_buffer:#?}", machine.video_buffer);
+    }
+
+    #[test]
+    fn decodes_dxyn_as_display_or_draw_taller_sprite_when_empty_buffer() {
+        let mut machine = Machine::new();
+        let i: usize = 2048;
+        machine.index_register = i as u16;
+        machine.memory[i + 0] = 0b1100_0011;  //
+        machine.memory[i + 1] = 0b0110_0110;  //
+        machine.memory[i + 2] = 0b0011_1100;  // Kinda like an X
+        machine.memory[i + 3] = 0b0110_0110;  //
+        machine.memory[i + 4] = 0b1100_0011;  //
+        machine.variable_register[0xF] = 0x7;  // X: column
+        machine.variable_register[0x2] = 0xB;  // Y: line
+        // "Draw the X sprite (5 bit tall) at (x, y) = (0x7, 0xB)"
+        // Therefore it goes from (0x7, 0xB) to (0x7 + 0x7, 0xB + 0x4)
+
+        machine.decode(0xDF25u16); // NNN = 0xF25
+
+        let mut expected_buffer = [[0; 64]; 32];
+        //
+        expected_buffer[0xB][0x7 + 0] = 1;
+        expected_buffer[0xB][0x7 + 1] = 1;
+        expected_buffer[0xB][0x7 + 2] = 0;
+        expected_buffer[0xB][0x7 + 3] = 0;
+        expected_buffer[0xB][0x7 + 4] = 0;
+        expected_buffer[0xB][0x7 + 5] = 0;
+        expected_buffer[0xB][0x7 + 6] = 1;
+        expected_buffer[0xB][0x7 + 7] = 1;
+        //
+        expected_buffer[0xB + 1][0x7 + 0] = 0;
+        expected_buffer[0xB + 1][0x7 + 1] = 1;
+        expected_buffer[0xB + 1][0x7 + 2] = 1;
+        expected_buffer[0xB + 1][0x7 + 3] = 0;
+        expected_buffer[0xB + 1][0x7 + 4] = 0;
+        expected_buffer[0xB + 1][0x7 + 5] = 1;
+        expected_buffer[0xB + 1][0x7 + 6] = 1;
+        expected_buffer[0xB + 1][0x7 + 7] = 0;
+        //
+        expected_buffer[0xB + 2][0x7 + 0] = 0;
+        expected_buffer[0xB + 2][0x7 + 1] = 0;
+        expected_buffer[0xB + 2][0x7 + 2] = 1;
+        expected_buffer[0xB + 2][0x7 + 3] = 1;
+        expected_buffer[0xB + 2][0x7 + 4] = 1;
+        expected_buffer[0xB + 2][0x7 + 5] = 1;
+        expected_buffer[0xB + 2][0x7 + 6] = 0;
+        expected_buffer[0xB + 2][0x7 + 7] = 0;
+        //
+        expected_buffer[0xB + 3][0x7 + 0] = 0;
+        expected_buffer[0xB + 3][0x7 + 1] = 1;
+        expected_buffer[0xB + 3][0x7 + 2] = 1;
+        expected_buffer[0xB + 3][0x7 + 3] = 0;
+        expected_buffer[0xB + 3][0x7 + 4] = 0;
+        expected_buffer[0xB + 3][0x7 + 5] = 1;
+        expected_buffer[0xB + 3][0x7 + 6] = 1;
+        expected_buffer[0xB + 3][0x7 + 7] = 0;
+        //
+        expected_buffer[0xB + 4][0x7 + 0] = 1;
+        expected_buffer[0xB + 4][0x7 + 1] = 1;
+        expected_buffer[0xB + 4][0x7 + 2] = 0;
+        expected_buffer[0xB + 4][0x7 + 3] = 0;
+        expected_buffer[0xB + 4][0x7 + 4] = 0;
+        expected_buffer[0xB + 4][0x7 + 5] = 0;
+        expected_buffer[0xB + 4][0x7 + 6] = 1;
+        expected_buffer[0xB + 4][0x7 + 7] = 1;
+        assert_eq!(machine.video_buffer, expected_buffer);
     }
 }
