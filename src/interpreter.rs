@@ -6,6 +6,7 @@ pub struct Machine {
     program_counter: u16,
     variable_register: [u8; 16],
     index_register: u16,
+    memory: [u8; 4096],
 }
 
 impl Machine {
@@ -16,6 +17,7 @@ impl Machine {
             program_counter: 0,
             variable_register: [0; 16],
             index_register: 0,
+            memory: [0; 4096],
         }
     }
 
@@ -39,16 +41,25 @@ impl Machine {
                 let index = (opcode & 0x0F00) >> 8;
                 let value = opcode & 0x00FF;
                 self.set_vx(index, value as u8);
-            },
+            }
             0x7000..=0x7FFF => {
                 let index = (opcode & 0x0F00) >> 8;
                 let value = opcode & 0x00FF;
                 self.add_to_vx(index, value as u8);
-            },
+            }
             0xA000..=0xAFFF => {
                 let value = opcode & 0x0FFF;
                 self.set_i(value);
-            },
+            }
+            0xD000..=0xDFFF => {
+                let vx = (opcode & 0x0F00) >> 8;
+                let x_position = self.variable_register[vx as usize];
+                let vy = (opcode & 0x00F0) >> 4;
+                let y_position = self.variable_register[vy as usize];
+                let height = opcode & 0x000F;
+                let address = self.index_register;
+                self.draw(x_position, y_position, height as u8, address);
+            }
             _ => todo!()
         }
     }
@@ -71,6 +82,36 @@ impl Machine {
 
     fn set_i(&mut self, value: u16) {
         self.index_register = value;
+    }
+
+    fn draw(&mut self, x: u8, y: u8, height: u8, address: u16) {
+        let line = y as usize;
+        let column = x as usize;
+        let image = self.memory[address as usize];
+        let bytes = [
+            image & 0b1000_0000,
+            image & 0b0100_0000,
+            image & 0b0010_0000,
+            image & 0b0001_0000,
+            image & 0b0000_1000,
+            image & 0b0000_0100,
+            image & 0b0000_0010,
+            image & 0b0000_0001,
+        ];
+        // let mut b = [0u8; 8];
+        for i in 0..8 {
+            if bytes[i] == 0 {
+                // b[i] = 0;
+                self.video_buffer[line][column + i] = 0;
+            } else {
+                // b[i] = 1;
+                self.video_buffer[line][column + i] = 1;
+            }
+        }
+
+        // for byte in b {
+
+        // }
     }
 }
 
@@ -158,5 +199,22 @@ mod tests {
         machine.decode(0xAF23u16);  // NNN = 0xF23
 
         assert_eq!(machine.index_register, 0xF23);
+    }
+
+    #[test]
+    fn decodes_dxyn_as_display_or_draw_1_pixel_tall_when_empty_buffer() {
+        let mut machine = Machine::new();
+        let i = 2048;
+        machine.index_register = i;
+        machine.memory[i as usize] = 0b1000_0000;
+        machine.variable_register[0xF] = 0x1;
+        machine.variable_register[0xE] = 0x1;
+        // "Draw the sprite (1 pixel tall) at (x, y) = (1, 1) = (col, lin)"
+
+        machine.decode(0xDFE1u16); // NNN = 0xFE1
+
+        let mut expected_buffer = [[0; 64]; 32];
+        expected_buffer[1][1] = 1;
+        assert_eq!(machine.video_buffer, expected_buffer, "actual: {:#?}\nexpected: {expected_buffer:#?}", machine.video_buffer);
     }
 }
