@@ -30,26 +30,47 @@ impl Machine {
 
     fn decode(&mut self, opcode: u16) {
         match opcode {
-            0x00E0 => self.video_buffer = [[0; 64]; 32],
-            0x1000..=0x1FFF => self.program_counter = opcode - 0x1000,
+            0x00E0 => self.clear_screen(),
+            0x1000..=0x1FFF => {
+                let address = opcode & 0x0FFF;
+                self.jump(address);
+            }
             0x6000..=0x6FFF => {
-                let register = opcode & 0x0F00;
-                let index = register >> 8;
+                let index = (opcode & 0x0F00) >> 8;
                 let value = opcode & 0x00FF;
-                self.variable_register[index as usize] = value as u8;
+                self.set_vx(index, value as u8);
             },
             0x7000..=0x7FFF => {
-                let register = opcode & 0x0F00;
-                let index = register >> 8;
+                let index = (opcode & 0x0F00) >> 8;
                 let value = opcode & 0x00FF;
-                self.variable_register[index as usize] = self.variable_register[index as usize].wrapping_add(value as u8);
+                self.add_to_vx(index, value as u8);
             },
             0xA000..=0xAFFF => {
                 let value = opcode & 0x0FFF;
-                self.index_register = value;
+                self.set_i(value);
             },
             _ => todo!()
         }
+    }
+
+    fn clear_screen(&mut self) {
+        self.video_buffer = [[0; 64]; 32]
+    }
+
+    fn jump(&mut self, address: u16) {
+        self.program_counter = address;
+    }
+
+    fn set_vx(&mut self, x: u16, value: u8) {
+        self.variable_register[x as usize] = value;
+    }
+
+    fn add_to_vx(&mut self, x: u16, value: u8) {
+        self.variable_register[x as usize] = self.variable_register[x as usize].wrapping_add(value);
+    }
+
+    fn set_i(&mut self, value: u16) {
+        self.index_register = value;
     }
 }
 
