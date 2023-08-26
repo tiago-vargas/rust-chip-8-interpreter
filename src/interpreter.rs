@@ -2,7 +2,7 @@ use std::path::Path;
 
 pub struct Machine {
     pub rom_bytes: Vec<u8>,
-    pub video_buffer: [[u8; 64]; 32],
+    pub video_buffer: [[u8; 64]; 32],  // 64 pixels x 32 pixels === 64 bit x 32 bit, but there's no `u1`
     program_counter: u16,
     variable_register: [u8; 16],
     index_register: u16,
