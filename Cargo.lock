@@ -799,6 +799,7 @@ dependencies = [
 name = "rust-chip-8-interpreter"
 version = "0.1.0"
 dependencies = [
+ "relm4",
  "relm4-components",
 ]
 
