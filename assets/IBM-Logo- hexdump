@@ -1,0 +1,103 @@
+0000000    e000    2aa2    0c60    0861    1fd0    0970    39a2    1fd0
+0000010    48a2    0870    1fd0    0470    57a2    1fd0    0870    66a2
+0000020    1fd0    0870    75a2    1fd0    2812    00ff    00ff    003c
+0000030    003c    003c    003c    00ff    ffff    ff00    3800    3f00
+0000040    3f00    3800    ff00    ff00    0080    00e0    00e0    0080
+0000050    0080    00e0    00e0    f880    fc00    3e00    3f00    3b00
+0000060    3900    f800    f800    0003    0007    000f    00bf    00fb
+0000070    00f3    00e3    e043    e000    8000    8000    8000    8000
+0000080    e000    e000
+0000084
+
+
+0000000
+	e000			; CLEAR_SCREEN
+	2aa2			; CALL #AA2
+	0c60			; SET %VC TO 60
+	0861			; CALL_MACHINE #861
+	1fd0			; JUMP TO #FD0
+	0970			; CALL_MACHINE #970
+	39a2			; SKIP IF V9 == A2
+	1fd0			; JUMP TO #FD0
+
+0000010
+	48a2			; SKIP IF V8 != A2
+	0870			; CALL_MACHINE #870
+	1fd0			; JUMP TO #FD0
+	0470			; CALL_MACHINE #470
+	57a2			; ????
+	1fd0			; JUMP TO #FD0
+	0870			;
+	66a2			;
+
+0000020
+	1fd0			; JUMP TO #FD0
+	0870			;
+	75a2			;
+	1fd0			; JUMP TO #FD0
+	2812			;
+	00ff			;
+	00ff			;
+	003c			;
+
+0000030
+	003c			;
+	003c			;
+	003c			;
+	00ff			;
+	ffff			;
+	ff00			;
+	3800			;
+	3f00			;
+
+0000040
+	3f00			;
+	3800			;
+	ff00			;
+	ff00			;
+	0080			;
+	00e0			;
+	00e0			;
+	0080			;
+
+0000050
+	0080			;
+	00e0			; CLEAR_SCREEN
+	00e0			; CLEAR_SCREEN
+	f880			; ????
+	fc00			; ????
+	3e00			; SKIP IF VE == 00
+	3f00			; SKIP IF VF == 00
+	3b00			; SKIP IF VB == 00
+
+0000060
+	3900			; SKIP IF V9 == 00
+	f800			; ????
+	f800			; ????
+	0003			; CALL_MACHINE #003
+	0007			; CALL_MACHINE #007
+	000f			; CALL_MACHINE #00F
+	00bf			; CALL_MACHINE #0BF
+	00fb			; CALL_MACHINE #0FB
+
+0000070
+	00f3			; CALL_MACHINE #0F3
+	00e3			; CALL_MACHINE #043
+	e043			; ????
+	e000			; CLEAR_SCREEN
+	8000			; SET V0 TO V0
+	8000			; SET V0 TO V0
+	8000			; SET V0 TO V0
+	8000			; SET V0 TO V0
+
+0000080
+	e000			; CLEAR_SCREEN
+	e000			; CLEAR_SCREEN
+
+
+
+
+
+
+
+0000084
